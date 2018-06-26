@@ -237,22 +237,28 @@ def fetch_user_repo(user_script):
     """Fetch the GIT repo and its root path given user's script."""
     dir_path = os.path.dirname(os.path.abspath(user_script))
     git_repo = git.Repo(dir_path, search_parent_directories=True)
-    git_root = git_repo.git.rev_parse("--show-toplevel")
-    return git_repo, git_root
+    return git_repo
 
 
 def infer_versioning_metadata(existing_metadata):
-    """Infer information about user's script versioning if available."""
-    git_repo, git_root = fetch_user_repo(existing_metadata['user_script'])
-    existing_metadata['is_dirty'] = git_repo.is_dirty()
-    existing_metadata['HEAD_sha'] = git_repo.head.object.hexsha
-    existing_metadata['active_branch'] = git_repo.active_branch.name
+    """Infer information about user's script versioning if available.
+       Fills the following information:
+
+       `is_dirty` shows whether the git repo is at a clean state.
+       `HEAD_sha` gives the hash of head of the repo.
+       `active_branch` shows the active branch of the repo.
+       `diff_sha` shows the hash of the diff in the repo.
+
+       :returns: the `existing_metadata` but filled with above info.
+
+    """
+    git_repo = fetch_user_repo(existing_metadata['user_script'])
+    existing_metadata['VCS'] = {}
+    existing_metadata['VCS']['is_dirty'] = git_repo.is_dirty()
+    existing_metadata['VCS']['HEAD_sha'] = git_repo.head.object.hexsha
+    existing_metadata['VCS']['active_branch'] = git_repo.active_branch.name
     # The 'diff' of the current version from the latest commit
     diff = git_repo.git.diff(git_repo.head.commit.tree)
     diff_sha = hashlib.sha256(diff).hexdigest()
-    existing_metadata['diff_sha'] = diff_sha
-    # VCS system
-    # User repo's version
-    # User repo's HEAD commit hash
+    existing_metadata['VCS']['diff_sha'] = diff_sha
     return existing_metadata
-
