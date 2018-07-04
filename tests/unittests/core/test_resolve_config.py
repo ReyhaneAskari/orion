@@ -32,7 +32,6 @@ def test_infer_versioning_metadata():
     assert existing_metadata['VCS']['active_branch'] == 'master'
     # the diff should be empty so the diff_sha should be equal to the diff sha of an empty string
     assert existing_metadata['VCS']['diff_sha'] == hashlib.sha256(''.encode('utf-8')).hexdigest()
-    assert 'diff_sha' in existing_metadata['VCS']
 
     test_repo.create_head('feature')
     test_repo.git.checkout('feature')
